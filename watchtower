@@ -298,8 +298,10 @@ run_doctor() {
     check_item "Bash" "$(command_exists bash && echo true || echo false)"
     check_item "Python 3" "$(command_exists python3 && echo true || echo false)"
     check_item "Quickshell" "$(command_exists quickshell && echo true || echo false)"
-    check_item "Hyprland" "$(command_exists Hyprland && echo true || command_exists hyprland && echo true || echo false)"
-    check_item "Hyprland IPC" "$(command_exists hyprctl && echo true || echo false)"
+    # Hyprland installation, session and IPC are separate checks.
+    check_item "Hyprland binary" "$(command_exists Hyprland && echo true || command_exists hyprland && echo true || echo false)"
+    check_item "Hyprland session" "$([[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] && echo true || echo false)"
+    check_item "Hyprland IPC" "$(command_exists hyprctl && hyprctl version >/dev/null 2>&1 && echo true || echo false)"
     check_item "PipeWire" "$(command_exists wpctl && echo true || echo false)"
     check_item "D-Bus" "$(command_exists busctl && echo true || echo false)"
     check_item "systemd" "$(command_exists systemctl && echo true || echo false)"
