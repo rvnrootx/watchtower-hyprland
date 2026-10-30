@@ -1,0 +1,24 @@
+# Runtime
+*.log
+*.pid
+*.sock
+
+# Generated files
+.cache/
+generated/
+build/
+dist/
+
+# User configuration
+config.local.yaml
+*.local.yaml
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
