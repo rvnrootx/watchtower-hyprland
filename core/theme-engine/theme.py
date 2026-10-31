@@ -50,6 +50,7 @@ class ThemeEngine:
     ):
         self.themes_dir = Path(themes_dir)
         self.active_file = Path(active_file)
+        self.runtime_file = self.active_file.with_name("active-theme.json")
 
         try:
             self.schema = json.loads(SCHEMA_FILE.read_text())
@@ -160,41 +161,33 @@ class ThemeEngine:
 
         return value
 
-    def apply(self, theme_id: str) -> None:
-        # Validate completely before changing persistent state.
-        self.load(theme_id)
-
-        self.active_file.parent.mkdir(parents=True, exist_ok=True)
-
+    @staticmethod
+    def _atomic_write(path: Path, content: str) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
         temp_path = None
 
         try:
             fd, temp_name = tempfile.mkstemp(
-                prefix=".active-theme.",
-                dir=self.active_file.parent,
+                prefix=f".{path.name}.",
+                dir=path.parent,
                 text=True,
             )
             temp_path = Path(temp_name)
-
             os.fchmod(fd, stat.S_IRUSR | stat.S_IWUSR)
 
             with os.fdopen(fd, "w", encoding="utf-8") as handle:
-                handle.write(theme_id + "\n")
+                handle.write(content)
                 handle.flush()
                 os.fsync(handle.fileno())
 
-            os.replace(temp_path, self.active_file)
+            os.replace(temp_path, path)
             temp_path = None
 
-            # Persist the directory entry where supported.
-            dir_fd = os.open(self.active_file.parent, os.O_RDONLY)
+            dir_fd = os.open(path.parent, os.O_RDONLY)
             try:
                 os.fsync(dir_fd)
             finally:
                 os.close(dir_fd)
-
-        except OSError as exc:
-            raise ThemeError(f"Could not activate theme: {exc}") from exc
 
         finally:
             if temp_path is not None:
@@ -202,6 +195,130 @@ class ThemeEngine:
                     temp_path.unlink(missing_ok=True)
                 except OSError:
                     pass
+
+    def export_active(self) -> dict[str, Any]:
+        active = self.current()
+        theme = self.load(active) if active else None
+
+        document = {
+            "schema_version": 1,
+            "active_theme": active,
+            "theme": theme,
+        }
+
+        self._atomic_write(
+            self.runtime_file,
+            json.dumps(document, indent=2) + chr(10),
+        )
+
+        return document
+
+    @staticmethod
+    def _atomic_write(path: Path, content: str) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temp_path = None
+
+        try:
+            fd, temp_name = tempfile.mkstemp(
+                prefix=f".{path.name}.",
+                dir=path.parent,
+                text=True,
+            )
+            temp_path = Path(temp_name)
+            os.fchmod(fd, stat.S_IRUSR | stat.S_IWUSR)
+
+            with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                handle.write(content)
+                handle.flush()
+                os.fsync(handle.fileno())
+
+            os.replace(temp_path, path)
+            temp_path = None
+
+            dir_fd = os.open(path.parent, os.O_RDONLY)
+            try:
+                os.fsync(dir_fd)
+            finally:
+                os.close(dir_fd)
+
+        finally:
+            if temp_path is not None:
+                try:
+                    temp_path.unlink(missing_ok=True)
+                except OSError:
+                    pass
+
+    def export_active(self) -> dict[str, Any]:
+        active = self.current()
+        theme = self.load(active) if active else None
+
+        document = {
+            "schema_version": 1,
+            "active_theme": active,
+            "theme": theme,
+        }
+
+        self._atomic_write(
+            self.runtime_file,
+            json.dumps(document, indent=2) + chr(10),
+        )
+
+        return document
+
+    def apply(self, theme_id: str) -> None:
+        # Validate before modifying either state file.
+        theme = self.load(theme_id)
+
+        old_state = (
+            self.active_file.read_bytes()
+            if self.active_file.exists()
+            else None
+        )
+        old_runtime = (
+            self.runtime_file.read_bytes()
+            if self.runtime_file.exists()
+            else None
+        )
+
+        document = {
+            "schema_version": 1,
+            "active_theme": theme_id,
+            "theme": theme,
+        }
+
+        try:
+            self._atomic_write(self.active_file, theme_id + chr(10))
+            self._atomic_write(
+                self.runtime_file,
+            json.dumps(document, indent=2) + chr(10),
+            )
+
+        except (OSError, UnicodeError) as exc:
+            # Restore the previous state if either write fails.
+            try:
+                if old_state is None:
+                    self.active_file.unlink(missing_ok=True)
+                else:
+                    self._atomic_write(
+                        self.active_file,
+                        old_state.decode("utf-8"),
+                    )
+
+                if old_runtime is None:
+                    self.runtime_file.unlink(missing_ok=True)
+                else:
+                    self._atomic_write(
+                        self.runtime_file,
+                        old_runtime.decode("utf-8"),
+                    )
+
+            except (OSError, UnicodeError) as rollback_error:
+                raise ThemeError(
+                    f"Activation failed: {exc}. "
+                    f"Rollback failed: {rollback_error}"
+                ) from rollback_error
+
+            raise ThemeError(f"Could not activate theme: {exc}") from exc
 
     def preview(self, theme_id: str) -> dict[str, Any]:
         return self.load(theme_id)
@@ -328,6 +445,11 @@ def build_parser() -> argparse.ArgumentParser:
     apply = subparsers.add_parser("apply", help="Activate a theme")
     apply.add_argument("theme")
 
+    subparsers.add_parser(
+        "export",
+        help="Export the active theme as runtime JSON",
+    )
+
     return parser
 
 
@@ -353,6 +475,12 @@ def main() -> int:
         if args.command == "apply":
             engine.apply(args.theme)
             print(f"Activated theme: {args.theme}")
+            return 0
+
+        if args.command == "export":
+            document = engine.export_active()
+            print(f"Exported active theme: {document['active_theme'] or 'none'}")
+            print(f"Runtime file: {engine.runtime_file}")
             return 0
 
         return 2

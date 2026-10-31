@@ -127,6 +127,29 @@ class ThemeEngineTests(unittest.TestCase):
         with self.assertRaises(ThemeError):
             self.engine.load("batman")
 
+    def test_apply_creates_runtime_json(self):
+        self.engine.apply("batman")
+
+        import json
+        document = json.loads(self.engine.runtime_file.read_text())
+
+        self.assertEqual(document["active_theme"], "batman")
+        self.assertEqual(document["theme"]["name"], "Batman")
+        self.assertEqual(document["schema_version"], 1)
+
+    def test_export_active(self):
+        self.engine.apply("batman")
+        document = self.engine.export_active()
+
+        self.assertEqual(document["active_theme"], "batman")
+        self.assertTrue(self.engine.runtime_file.is_file())
+
+    def test_export_without_active_theme(self):
+        document = self.engine.export_active()
+
+        self.assertIsNone(document["active_theme"])
+        self.assertIsNone(document["theme"])
+
     def test_active_state_has_restricted_permissions(self):
         self.engine.apply("batman")
 
