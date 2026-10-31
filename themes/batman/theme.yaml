@@ -1,0 +1,35 @@
+schema_version: 1
+id: "batman"
+name: "Batman"
+description: "Dark tactical interface with restrained gold accents."
+version: "1.0.0"
+
+palette:
+  background: "#090B10"
+  foreground: "#F2F2F2"
+  surface: "#141821"
+  surface_alt: "#1D2430"
+  primary: "#D6AE45"
+  secondary: "#737B8C"
+  accent: "#F0C75E"
+  border: "#353B48"
+  success: "#38C98B"
+  warning: "#F5B942"
+  danger: "#EF5350"
+
+typography:
+  family: "Inter"
+  size: 10
+  weight: 500
+
+shape:
+  radius: 14
+  border_width: 1
+
+effects:
+  transparency: 0.88
+  blur: true
+
+animation:
+  enabled: true
+  duration: 220

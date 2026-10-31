@@ -1,0 +1,35 @@
+schema_version: 1
+id: "wonder-woman"
+name: "Wonder Woman"
+description: "Regal crimson interface with gold highlights."
+version: "1.0.0"
+
+palette:
+  background: "#190B10"
+  foreground: "#FFF3E8"
+  surface: "#2B111A"
+  surface_alt: "#401A27"
+  primary: "#B92745"
+  secondary: "#D7A13D"
+  accent: "#F0C15B"
+  border: "#663044"
+  success: "#38C98B"
+  warning: "#F5B942"
+  danger: "#EF5350"
+
+typography:
+  family: "Inter"
+  size: 10
+  weight: 500
+
+shape:
+  radius: 14
+  border_width: 1
+
+effects:
+  transparency: 0.88
+  blur: true
+
+animation:
+  enabled: true
+  duration: 220

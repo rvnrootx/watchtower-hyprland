@@ -1,0 +1,35 @@
+schema_version: 1
+id: "superman"
+name: "Superman"
+description: "Bright heroic blue interface with red and solar accents."
+version: "1.0.0"
+
+palette:
+  background: "#081426"
+  foreground: "#F4F7FF"
+  surface: "#102440"
+  surface_alt: "#18365B"
+  primary: "#1677D2"
+  secondary: "#D83A45"
+  accent: "#F2C94C"
+  border: "#28517A"
+  success: "#38C98B"
+  warning: "#F5B942"
+  danger: "#EF5350"
+
+typography:
+  family: "Inter"
+  size: 10
+  weight: 500
+
+shape:
+  radius: 14
+  border_width: 1
+
+effects:
+  transparency: 0.88
+  blur: true
+
+animation:
+  enabled: true
+  duration: 220

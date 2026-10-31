@@ -199,72 +199,24 @@ show_status() {
 # Theme management
 # ------------------------------------------------------------
 
-theme_list() {
-    printf '\nAvailable Watchtower themes\n\n'
-
-    local found=0
-    local theme_dir
-    local theme_name
-    local active
-
-    active="$(get_active_theme)"
-
-    if [[ ! -d "$WT_THEMES_DIR" ]]; then
-        warning "Theme directory not found: $WT_THEMES_DIR"
-        return 0
-    fi
-
-    for theme_dir in "$WT_THEMES_DIR"/*/; do
-        [[ -d "$theme_dir" ]] || continue
-
-        theme_name="$(basename "$theme_dir")"
-
-        if [[ -f "$theme_dir/theme.yaml" ]]; then
-            if [[ "$theme_name" == "$active" ]]; then
-                printf '  \033[1;32m● %s (active)\033[0m\n' "$theme_name"
-            else
-                printf '  \033[1;34m○ %s\033[0m\n' "$theme_name"
-            fi
-            ((found+=1))
-        fi
-    done
-
-    if (( found == 0 )); then
-        warning "No valid theme manifests found yet."
-    fi
-
-    printf '\nTotal: %s\n' "$found"
-}
-
-theme_current() {
-    local active
-    active="$(get_active_theme)"
-
-    if [[ "$active" == "none" ]]; then
-        info "No character theme has been activated yet."
-    else
-        printf 'Active theme: %s\n' "$active"
-    fi
-}
-
 theme_command() {
-    local subcommand="${1:-help}"
+    local theme_script="$WT_ROOT/core/theme-engine/theme.py"
 
-    case "$subcommand" in
-        list)
-            theme_list
-            ;;
-        current)
-            theme_current
-            ;;
-        help|--help|-h)
-            printf 'Usage: watchtower theme {list|current}\n'
-            ;;
-        *)
-            error "Unknown theme command: $subcommand"
-            return 2
-            ;;
-    esac
+    if [[ ! -f "$theme_script" ]]; then
+        error "Theme Engine not found: $theme_script"
+        return 1
+    fi
+
+    if ! command_exists python3; then
+        error "Python 3 is required for theme management."
+        return 1
+    fi
+
+    if (( $# == 0 )); then
+        set -- --help
+    fi
+
+    python3 "$theme_script" "$@"
 }
 
 # ------------------------------------------------------------

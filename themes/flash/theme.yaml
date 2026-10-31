@@ -1,0 +1,35 @@
+schema_version: 1
+id: "flash"
+name: "Flash"
+description: "High-energy red interface with electric yellow accents."
+version: "1.0.0"
+
+palette:
+  background: "#170809"
+  foreground: "#FFF5F2"
+  surface: "#2B1012"
+  surface_alt: "#421719"
+  primary: "#E52B35"
+  secondary: "#FFB52E"
+  accent: "#FFD447"
+  border: "#67252A"
+  success: "#38C98B"
+  warning: "#F5B942"
+  danger: "#EF5350"
+
+typography:
+  family: "Inter"
+  size: 10
+  weight: 500
+
+shape:
+  radius: 14
+  border_width: 1
+
+effects:
+  transparency: 0.88
+  blur: true
+
+animation:
+  enabled: true
+  duration: 220

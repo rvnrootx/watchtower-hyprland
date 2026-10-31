@@ -1,0 +1,35 @@
+schema_version: 1
+id: "redhood"
+name: "Red Hood"
+description: "Aggressive dark interface with blood-red highlights."
+version: "1.0.0"
+
+palette:
+  background: "#10090B"
+  foreground: "#F5ECEE"
+  surface: "#211216"
+  surface_alt: "#351A20"
+  primary: "#B91F35"
+  secondary: "#77404A"
+  accent: "#F04452"
+  border: "#592630"
+  success: "#38C98B"
+  warning: "#F5B942"
+  danger: "#EF5350"
+
+typography:
+  family: "Inter"
+  size: 10
+  weight: 500
+
+shape:
+  radius: 14
+  border_width: 1
+
+effects:
+  transparency: 0.88
+  blur: true
+
+animation:
+  enabled: true
+  duration: 220
