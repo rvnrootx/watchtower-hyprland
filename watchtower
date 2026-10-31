@@ -131,11 +131,24 @@ Theme commands:
   theme list            List available themes
   theme current         Show currently active theme
 
+Configuration commands:
+  config show           Display effective configuration
+  config validate       Validate configuration
+  config get <key>      Read a configuration value
+  config set <key> <value>
+                        Update a configuration value
+  config init           Initialize user configuration
+  config reset          Remove user configuration and restore defaults
+
 Examples:
   watchtower status
   watchtower doctor
   watchtower theme list
   watchtower theme current
+  watchtower config show
+  watchtower config get appearance.character
+  watchtower config set appearance.character batman
+  watchtower config validate
 
 Environment:
   WATCHTOWER_ROOT       Override project installation path
@@ -297,6 +310,8 @@ run_doctor() {
     check_item "Git" "$(command_exists git && echo true || echo false)"
     check_item "Bash" "$(command_exists bash && echo true || echo false)"
     check_item "Python 3" "$(command_exists python3 && echo true || echo false)"
+    check_item "PyYAML" "$(python3 -c 'import yaml' >/dev/null 2>&1 && echo true || echo false)"
+    check_item "JSON Schema" "$(python3 -c 'import jsonschema' >/dev/null 2>&1 && echo true || echo false)"
     check_item "Quickshell" "$(command_exists quickshell && echo true || echo false)"
     # Hyprland installation, session and IPC are separate checks.
     check_item "Hyprland binary" "$(if command_exists Hyprland || command_exists hyprland; then echo true; else echo false; fi)"
@@ -347,6 +362,26 @@ show_logs() {
 }
 
 # ------------------------------------------------------------
+# Configuration
+# ------------------------------------------------------------
+
+config_command() {
+    local config_script="$WT_ROOT/core/config-manager/config.py"
+
+    if [[ ! -f "$config_script" ]]; then
+        error "Config Manager not found: $config_script"
+        return 1
+    fi
+
+    if ! command_exists python3; then
+        error "Python 3 is required for configuration management."
+        return 1
+    fi
+
+    python3 "$config_script" "$@"
+}
+
+# ------------------------------------------------------------
 # Main command dispatcher
 # ------------------------------------------------------------
 
@@ -372,6 +407,9 @@ main() {
             ;;
         theme)
             theme_command "$@"
+            ;;
+        config)
+            config_command "$@"
             ;;
         *)
             error "Unknown command: $command"

@@ -1,0 +1,69 @@
+schema_version: 1
+
+appearance:
+  character: nightwing
+  color_scheme: dark
+  accent_color: electric-blue
+  transparency: 0.88
+  animations: true
+  reduce_motion: false
+
+shell:
+  enabled: true
+  position: top
+  margin: 8
+  font_family: sans-serif
+  font_size: 10
+
+dynamic_island:
+  enabled: true
+  position: top-center
+  collapsed_width: 180
+  expanded_width: 420
+  auto_collapse_seconds: 5
+  show_media: true
+  show_notifications: true
+  show_system_status: true
+
+notifications:
+  enabled: true
+  position: top-right
+  duration_seconds: 5
+  max_visible: 5
+  do_not_disturb: false
+
+control_center:
+  enabled: true
+  show_network: true
+  show_audio: true
+  show_brightness: true
+  show_battery: true
+
+batcomputer:
+  enabled: true
+  refresh_interval_seconds: 3
+  show_cpu: true
+  show_memory: true
+  show_gpu: true
+  show_network: true
+  show_storage: true
+
+sound:
+  enabled: true
+  character_sounds: true
+  interface_sounds: true
+  volume: 0.65
+
+stealth:
+  enabled: false
+  mute_interface_sounds: true
+  disable_animations: true
+  hide_notifications: true
+
+scheduler:
+  enabled: false
+  automatic_theme_switching: false
+  day_theme: nightwing
+  night_theme: batman
+  day_start: "07:00"
+  night_start: "19:00"
